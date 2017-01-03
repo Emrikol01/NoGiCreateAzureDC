@@ -23,7 +23,46 @@
     "dnsPrefix": {
       "type": "string",
       "metadata": {
-        "description": "The DNS prefix for the public IP address used by the Load Balancer"
+        "description": "The DNS prefix name for the public IP address used by the Load Balancer"
+      }
+    },
+    //
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The storage account name"
+      }
+    },
+     "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "The virtual network name"
+      }
+    },
+     "virtualNetworkAddressRange": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "The virtual network name"
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "The subnet name"
+      }
+    },
+    "subnetAddress": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "The subnetAddress"
+      }
+    },    
+    "vmName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of virtual machine"
       }
     },
     "_artifactsLocation": {
@@ -45,17 +84,17 @@
     }
   },
   "variables": {
-    "virtualNetworkName": "adVNET",
-    "virtualNetworkAddressRange": "10.0.0.0/16",
-    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'adsa')]",
+    //"virtualNetworkName": "adVNET",
+    //"virtualNetworkAddressRange": "10.0.0.0/16",
+    //"storageAccountName": "[concat(uniquestring(resourceGroup().id), 'adsa')]",
     "adLBFE": "LBFE",
     "adLBBE": "LBBE",
     "adRDPNAT": "adRDP",
-    "adNicName": "adNic",
+    "adNicName": "dcNic",
     "adNicIPAddress": "10.0.0.4",
-    "adVMName": "adVM",
-    "adSubnetName": "adSubnet",
-    "adSubnetAddressPrefix": "10.0.0.0/24",
+    //"adVMName": "adVM",
+    //"adSubnetName": "adSubnet",
+    //"adSubnetAddressPrefix": "10.0.0.0/24",
     "publicIPAddressName": "adPublicIP",
     "adAvailabilitySetName": "adAvailabiltySet",
     "adLBName": "adLoadBalancer"
@@ -63,7 +102,7 @@
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('storageAccountName')]",
+      "name": "[parameters('storageAccountName')]",
       "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
       "sku": {
@@ -103,16 +142,16 @@
         },
         "parameters": {
           "virtualNetworkName": {
-            "value": "[variables('virtualNetworkName')]"
+            "value": "[parameters('virtualNetworkName')]"
           },
           "virtualNetworkAddressRange": {
-            "value": "[variables('virtualNetworkAddressRange')]"
+            "value": "[parameters('virtualNetworkAddressRange')]"
           },
           "subnetName": {
-            "value": "[variables('adSubnetName')]"
+            "value": "[parameters('subnetName')]"
           },
           "subnetRange": {
-            "value": "[variables('adSubnetAddressPrefix')]"
+            "value": "[parameters('subnetAddress')]"
           }
         }
       }
@@ -174,7 +213,7 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[variables('adNicIPAddress')]",
               "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('adSubnetName'))]"
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
               },
               "loadBalancerBackendAddressPools": [
                 {
@@ -193,11 +232,11 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('adVMName')]",
+      "name": "[parameters('vmName')]",
       "apiVersion": "2015-06-15",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces', variables('adNicName'))]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('adAvailabilitySetName'))]",
         "[resourceId('Microsoft.Network/loadBalancers', variables('adLBName'))]"
@@ -210,7 +249,7 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('adAvailabilitySetName'))]"
         },
         "osProfile": {
-          "computerName": "[variables('adVMName')]",
+          "computerName": "[parameters('vmName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -224,7 +263,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob, 'vhds/', variables('adVMName'), '-os-disk.vhd')]"
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))).primaryEndpoints.blob, 'vhds/', parameters('vmName'), '-os-disk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -232,9 +271,9 @@
           "dataDisks": [
             {
               "vhd": {
-                "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob, 'vhds/', variables('adVMName'), '-data-disk.vhd')]"
+                "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))).primaryEndpoints.blob, 'vhds/', parameters('vmName'), '-data-disk.vhd')]"
               },
-              "name": "[concat(variables('adVMName'), '-data-disk')]",
+              "name": "[concat(parameters('vmName'), '-data-disk')]",
               "caching": "None",
               "createOption": "Empty",
               "diskSizeGB": "1000",
@@ -257,7 +296,7 @@
           "apiVersion": "2015-06-15",
           "location": "[resourceGroup().location]",
           "dependsOn": [
-            "[resourceId('Microsoft.Compute/virtualMachines', variables('adVMName'))]"
+            "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
           ],
           "properties": {
             "publisher": "Microsoft.Powershell",
@@ -289,7 +328,7 @@
       "name": "UpdateVNetDNS",
       "apiVersion": "2016-02-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('adVMName'), 'CreateADForest')]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'CreateADForest')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -299,16 +338,16 @@
         },
         "parameters": {
           "virtualNetworkName": {
-            "value": "[variables('virtualNetworkName')]"
+            "value": "[parameters('virtualNetworkName')]"
           },
           "virtualNetworkAddressRange": {
-            "value": "[variables('virtualNetworkAddressRange')]"
+            "value": "[parameters('virtualNetworkAddressRange')]"
           },
           "subnetName": {
-            "value": "[variables('adSubnetName')]"
+            "value": "[parameters('subnetName')]"
           },
           "subnetRange": {
-            "value": "[variables('adSubnetAddressPrefix')]"
+            "value": "[parameters('subnetAddressPrefix')]"
           },
           "DNSServerAddress": {
             "value": [

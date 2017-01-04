@@ -65,6 +65,26 @@
         "description": "The name of virtual machine"
       }
     },
+    "publisher": {
+      "type": "string",
+      "defaultValue": "MicrosoftWindowsServer",
+      "metadata": { "description": "The publisher value"  }
+    }, 
+    "offer": {
+      "type": "string",
+      "defaultValue": "WindowsServer",
+      "metadata": { "description": "The offer value"  }
+    }, 
+    "sku": {
+      "type": "string",
+      "defaultValue": "2016-Datacenter",
+      "metadata": { "description": "The sku value"  }
+    },
+    "version": {
+      "type": "string",
+      "defaultValue": "latest",
+      "metadata": { "description": "The version value"  }
+    },     
     "_artifactsLocation": {
       "type": "string",
       "metadata": {
@@ -347,7 +367,7 @@
             "value": "[parameters('subnetName')]"
           },
           "subnetRange": {
-            "value": "[parameters('subnetAddressPrefix')]"
+            "value": "[parameters('subnetAddress')]"
           },
           "DNSServerAddress": {
             "value": [

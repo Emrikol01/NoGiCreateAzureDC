@@ -65,6 +65,13 @@
         "description": "The name of virtual machine"
       }
     },
+    //
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2_v2",
+      "metadata": { "description": "The size of the virtual machine" }
+    },    
+    //
     "publisher": {
       "type": "string",
       "defaultValue": "MicrosoftWindowsServer",
@@ -263,7 +270,7 @@
       ],
       "properties": {
         "hardwareProfile": {
-          "vmSize": "Standard_D2_v2"
+          "vmSize": "[parameters('vmSize')]"
         },
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('adAvailabilitySetName'))]"

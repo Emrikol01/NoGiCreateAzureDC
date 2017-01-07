@@ -282,10 +282,14 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "MicrosoftWindowsServer",
-            "offer": "WindowsServer",
-            "sku": "2012-R2-Datacenter",
-            "version": "latest"
+            "publisher": "[parameters('publisher')]",
+            "offer": "[parameters('offer')]",
+            "sku": "[parameters('sku')]",
+            "version": "[parameters('version')]"
+            //"publisher": "MicrosoftWindowsServer",
+            //"offer": "WindowsServer",
+            //"sku": "2012-R2-Datacenter",
+            //"version": "latest"
           },
           "osDisk": {
             "name": "osdisk",
